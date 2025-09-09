@@ -24,6 +24,9 @@ public class PostServiceImpl{
 
     public List<Post> getAllPosts() {
         List<Post> post = postRepository.findAll();
+        if (post.isEmpty()) {
+            throw new ForbiddenException("There are no posts in the database");
+        }
         return postRepository.findAll();
     }
 
@@ -38,10 +41,11 @@ public class PostServiceImpl{
     public Post addNewPost(Post post, Authentication authentication) {
         JwtAuthenticationToken token = (JwtAuthenticationToken) authentication;
         String sub = token.getToken().getClaim("sub");
-        if (!post.getOwnerId().equals(sub)) {
-            throw new RuntimeException("Post owner is not the owner of the post");
+        if (post.getContent() == null || post.getContent().length() < 3) {
+            throw new ForbiddenException("Post content must be at least 3 characters long");
         }
-        System.out.println("Creating post by Keycloak sub: " + token.getName());
+        post.setOwnerId(sub);
+        System.out.println(token.getName() + " with id:" + post.getOwnerId() + " has created a new post");
         return  postRepository.save(post);
     }
 
@@ -56,9 +60,15 @@ public class PostServiceImpl{
         if (!postToUpdate.getOwnerId().equals(sub)) {
             throw new ForbiddenException("User is not the owner of the post");
         }
-
+        if (post.getContent() == null || post.getContent().length() < 3) {
+            throw new ForbiddenException("Post content must be at least 3 characters long");
+        }
+        if (!post.getOwnerId().equals(sub)) {
+            throw new ForbiddenException("Owner id mismatch");
+        }
         postToUpdate.setTitle(post.getTitle());
         postToUpdate.setContent(post.getContent());
+        System.out.println("Post with id:" + postToUpdate.getId() + " updated by: " + token.getName() + " with id:" + sub);
         return postRepository.save(postToUpdate);
     }
 
@@ -71,11 +81,11 @@ public class PostServiceImpl{
         String sub = token.getToken().getClaim("sub");
         boolean isOwner = post.get().getOwnerId().equals(sub);
         boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_bloggAdmin"));
-
+                .anyMatch(a -> a.getAuthority().equals("ROLE_admin"));
         if (!isOwner && !isAdmin) {
             throw new ForbiddenException("User is not the owner of the post or admin");
         }
+        System.out.println("Post with id:" + id + " has been successfully deleted by: " + token.getName() + " with id:" + sub);
         postRepository.deleteById(id);
     }
 

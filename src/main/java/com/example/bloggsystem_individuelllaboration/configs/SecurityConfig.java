@@ -24,11 +24,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                      auth
                         .requestMatchers("/api/v2/posts", "/api/v2/post/{id}").authenticated()
-                        .requestMatchers("/api/v2/newpost").hasRole("bloggUser")
-                        .requestMatchers("/api/v2/updatepost").hasAnyRole("bloggUser", "bloggAdmin")
-                        .requestMatchers("/api/v2/deletepost/{id}").hasAnyRole("bloggUser", "bloggAdmin")
-                        .requestMatchers("/api/v2/count").hasRole("bloggAdmin")
-                        .requestMatchers("/api/v2/test").hasAnyRole("bloggUser", "bloggAdmin")
+                        .requestMatchers("/api/v2/newpost").hasRole("user")
+                        .requestMatchers("/api/v2/updatepost").hasRole("user")
+                        .requestMatchers("/api/v2/deletepost/{id}").hasAnyRole("user", "admin")
+                        .requestMatchers("/api/v2/count").hasRole("admin")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 ->
