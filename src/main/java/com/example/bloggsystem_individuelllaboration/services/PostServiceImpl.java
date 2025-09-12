@@ -63,9 +63,6 @@ public class PostServiceImpl{
         if (post.getContent() == null || post.getContent().length() < 3) {
             throw new ForbiddenException("Post content must be at least 3 characters long");
         }
-        if (!post.getOwnerId().equals(sub)) {
-            throw new ForbiddenException("Owner id mismatch");
-        }
         postToUpdate.setTitle(post.getTitle());
         postToUpdate.setContent(post.getContent());
         System.out.println("Post with id:" + postToUpdate.getId() + " updated by: " + token.getName() + " with id:" + sub);
